@@ -3,6 +3,15 @@
 
 #undef strcpy
 
+static __inline__ unsigned long __libc_detect_null1(unsigned long w)
+{
+  unsigned long mask = 0x7f7f7f7f;
+  if (sizeof(long) == 8)
+    mask = ((mask << 16) << 16) | mask;
+  return ~(((w & mask) + mask) | w | mask);
+}
+
+
 char* strcpy(char* dst, const char* src)
 {
   char* dst0 = dst;
@@ -13,7 +22,7 @@ char* strcpy(char* dst, const char* src)
     long* ldst = (long*)dst;
     const long* lsrc = (const long*)src;
 
-    while (!__libc_detect_null(*lsrc))
+    while (!__libc_detect_null1(*lsrc))
       *ldst++ = *lsrc++;
 
     dst = (char*)ldst;
